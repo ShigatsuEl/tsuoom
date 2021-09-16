@@ -25,6 +25,15 @@ wsServer.on("connection", (socket) => {
     done();
     socket.to(roomName).emit("enter_room");
   });
+
+  socket.on("new_message", (message, room, done) => {
+    socket.to(room).emit("new_message", message);
+    done();
+  });
+
+  socket.on("disconnecting", () => {
+    socket.rooms.forEach((room) => socket.to(room).emit("leave_room"));
+  });
 });
 
 httpServer.listen(3000, handleListen);
