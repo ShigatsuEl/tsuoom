@@ -2,7 +2,7 @@ const socket = io();
 
 const welcome = document.getElementById("welcome");
 const room = document.getElementById("room");
-const form = welcome.querySelector("form");
+const welcomeForm = welcome.querySelector("#welcome form");
 
 room.hidden = true;
 
@@ -17,7 +17,7 @@ function addMessage(message) {
 
 function handleMessageSubmit(event) {
   event.preventDefault();
-  const input = room.querySelector("#message input");
+  const input = room.querySelector("input");
   const value = input.value;
   socket.emit("new_message", input.value, roomName, () => {
     addMessage(`You: ${value}`);
@@ -25,32 +25,31 @@ function handleMessageSubmit(event) {
   input.value = "";
 }
 
-function handleNicknameSubmit(event) {
-  event.preventDefault();
-  const input = room.querySelector("#nickname input");
-  socket.emit("nickname", input.value);
-}
-
 function showRoom() {
   welcome.hidden = true;
   room.hidden = false;
   const h3 = room.querySelector("h3");
-  const messageForm = room.querySelector("#message");
-  const nicknameForm = room.querySelector("#nickname");
+  const messageForm = room.querySelector("form");
   h3.innerText = `Room ${roomName}`;
   messageForm.addEventListener("submit", handleMessageSubmit);
-  nicknameForm.addEventListener("submit", handleNicknameSubmit);
 }
 
 function handleRoomSubmit(event) {
   event.preventDefault();
-  const input = form.querySelector("input");
-  socket.emit("enter_room", input.value, showRoom);
-  roomName = input.value;
-  input.value = "";
+  const nicknameInput = welcomeForm.querySelector("#nickname");
+  const roomNameInput = welcomeForm.querySelector("#roomName");
+  if (nicknameInput.value === "" || roomNameInput.value === "") {
+    alert("사용자 이름 또는 방 이름은 필수로 입력해야 합니다");
+    return;
+  }
+  socket.emit("nickname", nicknameInput.value);
+  socket.emit("enter_room", roomNameInput.value, showRoom);
+  roomName = roomNameInput.value;
+  nicknameInput.value = "";
+  roomNameInput.value = "";
 }
 
-form.addEventListener("submit", handleRoomSubmit);
+welcomeForm.addEventListener("submit", handleRoomSubmit);
 
 socket.on("enter_room", (user) => {
   addMessage(`${user} joined`);
