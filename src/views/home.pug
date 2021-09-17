@@ -22,9 +22,11 @@ html(lang="en")
                     video#myCamera(autoplay,playsinline, muted, width="400", height="400")
                     button#mute Mute
                     button#cameraBtn Turn Camera Off
+                    select#cameras
                 ul
                 form
                     input(placeholder="message", required, type="text")
                     button Send
+                    
         script(src="/socket.io/socket.io.js") 
         script(src="/public/js/app.js")
