@@ -51,11 +51,15 @@ function handleRoomSubmit(event) {
 
 welcomeForm.addEventListener("submit", handleRoomSubmit);
 
-socket.on("enter_room", (user) => {
+socket.on("enter_room", (user, count) => {
+  const h3 = room.querySelector("h3");
+  h3.innerText = `Room ${roomName} (${count})`;
   addMessage(`${user} joined`);
 });
 
-socket.on("leave_room", (user) => {
+socket.on("leave_room", (user, count) => {
+  const h3 = room.querySelector("h3");
+  h3.innerText = `Room ${roomName} (${count})`;
   addMessage(`${user} left`);
 });
 
