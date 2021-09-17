@@ -1,3 +1,6 @@
+/**
+ * Chat Part
+ */
 const socket = io();
 
 const welcome = document.getElementById("welcome");
@@ -84,3 +87,50 @@ socket.on("room_change", (rooms) => {
     roomList.appendChild(li);
   });
 });
+
+/**
+ * Video Part
+ */
+const myCamera = document.getElementById("myCamera");
+const muteBtn = document.getElementById("mute");
+const cameraBtn = document.getElementById("cameraBtn");
+
+let myStream;
+let muted = false;
+let cameraOff = false;
+
+async function getMedia() {
+  try {
+    myStream = await navigator.mediaDevices.getUserMedia({
+      audio: true,
+      video: true,
+    });
+    myCamera.srcObject = myStream;
+  } catch (e) {
+    console.log(e);
+  }
+}
+
+getMedia();
+
+function handleMuteClick() {
+  if (!muted) {
+    muteBtn.innerText = "Unmute";
+    muted = true;
+  } else {
+    muteBtn.innerText = "Mute";
+    muted = false;
+  }
+}
+function handleCameraClick() {
+  if (cameraOff) {
+    cameraBtn.innerText = "Turn Camera Off";
+    cameraOff = false;
+  } else {
+    cameraBtn.innerText = "Turn Camera On";
+    cameraOff = true;
+  }
+}
+
+muteBtn.addEventListener("click", handleMuteClick);
+cameraBtn.addEventListener("click", handleCameraClick);
