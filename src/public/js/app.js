@@ -25,12 +25,15 @@ function handleMessageSubmit(event) {
   input.value = "";
 }
 
+function showRoomName(roomName, count) {
+  const h3 = room.querySelector("h3");
+  h3.innerText = `Room ${roomName} (${count})`;
+}
+
 function showRoom() {
   welcome.hidden = true;
   room.hidden = false;
-  const h3 = room.querySelector("h3");
   const messageForm = room.querySelector("form");
-  h3.innerText = `Room ${roomName}`;
   messageForm.addEventListener("submit", handleMessageSubmit);
 }
 
@@ -52,15 +55,19 @@ function handleRoomSubmit(event) {
 welcomeForm.addEventListener("submit", handleRoomSubmit);
 
 socket.on("enter_room", (user, count) => {
-  const h3 = room.querySelector("h3");
-  h3.innerText = `Room ${roomName} (${count})`;
-  addMessage(`${user} joined`);
+  if (count) {
+    showRoomName(roomName, count);
+  } else {
+    addMessage(`${user} joined`);
+  }
 });
 
 socket.on("leave_room", (user, count) => {
-  const h3 = room.querySelector("h3");
-  h3.innerText = `Room ${roomName} (${count})`;
-  addMessage(`${user} left`);
+  if (count) {
+    showRoomName(roomName, count);
+  } else {
+    addMessage(`${user} left`);
+  }
 });
 
 socket.on("new_message", addMessage);
