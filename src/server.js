@@ -68,6 +68,10 @@ wsServer.on("connection", (socket) => {
     socket.to(roomName).emit("answer", answer);
   });
 
+  socket.on("ice", (ice, roomName) => {
+    socket.to(roomName).emit("ice", ice);
+  });
+
   socket.on("new_message", (message, room, done) => {
     socket.to(room).emit("new_message", `${socket.nickname}: ${message}`);
     done();

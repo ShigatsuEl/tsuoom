@@ -76,14 +76,22 @@ socket.on("enter_room_all", async (user, count) => {
 });
 
 socket.on("offer", async (offer) => {
+  console.log("received the offer");
   peerConnection.setRemoteDescription(offer);
   const answer = await peerConnection.createAnswer();
   peerConnection.setLocalDescription(answer);
   socket.emit("answer", answer, roomName);
+  console.log("sent the answer");
 });
 
 socket.on("answer", (answer) => {
+  console.log("received the answer");
   peerConnection.setRemoteDescription(answer);
+});
+
+socket.on("ice", (ice) => {
+  console.log("received candidate");
+  peerConnection.addIceCandidate(ice);
 });
 
 socket.on("leave_room", (user, count) => {
@@ -166,8 +174,20 @@ async function getMedia(deviceId) {
   }
 }
 
+function handleIce(data) {
+  console.log("sent candidate");
+  socket.emit("ice", data.candidate, roomName);
+}
+
+function handleTrack(data) {
+  const peerFace = document.getElementById("peerFace");
+  peerFace.srcObject = data.streams[0];
+}
+
 function makeConnection() {
   peerConnection = new RTCPeerConnection();
+  peerConnection.addEventListener("icecandidate", handleIce);
+  peerConnection.addEventListener("track", handleTrack);
   myStream
     .getTracks()
     .forEach((track) => peerConnection.addTrack(track, myStream));
