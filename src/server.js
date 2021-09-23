@@ -53,10 +53,10 @@ wsServer.on("connection", (socket) => {
 
   socket.on("enter_room", (roomName) => {
     socket.join(roomName);
-    socket.to(roomName).emit("enter_room", socket.nickname);
+    socket.to(roomName).emit("enter_room");
     wsServer
       .to(roomName)
-      .emit("enter_room", socket.nickname, countRoom(roomName));
+      .emit("enter_room_all", socket.nickname, countRoom(roomName));
     wsServer.sockets.emit("room_change", publicRooms());
   });
 

@@ -61,22 +61,23 @@ async function handleRoomSubmit(event) {
 
 welcomeForm.addEventListener("submit", handleRoomSubmit);
 
-socket.on("enter_room", async (user, count) => {
+socket.on("enter_room", async () => {
+  const offer = await peerConnection.createOffer();
+  peerConnection.setLocalDescription(offer);
+  socket.emit("offer", offer, roomName);
+});
+
+socket.on("enter_room_all", async (user, count) => {
   if (count) {
     showRoomName(roomName, count);
   } else {
     addMessage(`${user} joined`);
   }
-  if (peerConnection) {
-    const offer = await peerConnection.createOffer();
-    peerConnection.setLocalDescription(offer);
-    socket.emit("offer", offer, roomName);
-  }
 });
 
 socket.on("offer", async (offer) => {
   peerConnection.setRemoteDescription(offer);
-  const answer = await peerConnection.setLocalDescription(answer);
+  const answer = await peerConnection.createAnswer();
   peerConnection.setLocalDescription(answer);
   socket.emit("answer", answer, roomName);
 });
