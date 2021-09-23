@@ -43,7 +43,7 @@ async function showRoom() {
   messageForm.addEventListener("submit", handleMessageSubmit);
 }
 
-function handleRoomSubmit(event) {
+async function handleRoomSubmit(event) {
   event.preventDefault();
   const nicknameInput = welcomeForm.querySelector("#nickname");
   const roomNameInput = welcomeForm.querySelector("#roomName");
@@ -51,8 +51,9 @@ function handleRoomSubmit(event) {
     alert("사용자 이름 또는 방 이름은 필수로 입력해야 합니다");
     return;
   }
+  await showRoom();
   socket.emit("nickname", nicknameInput.value);
-  socket.emit("enter_room", roomNameInput.value, showRoom);
+  socket.emit("enter_room", roomNameInput.value);
   roomName = roomNameInput.value;
   nicknameInput.value = "";
   roomNameInput.value = "";
@@ -73,8 +74,15 @@ socket.on("enter_room", async (user, count) => {
   }
 });
 
-socket.on("offer", (offer) => {
-  console.log(offer);
+socket.on("offer", async (offer) => {
+  peerConnection.setRemoteDescription(offer);
+  const answer = await peerConnection.setLocalDescription(answer);
+  peerConnection.setLocalDescription(answer);
+  socket.emit("answer", answer, roomName);
+});
+
+socket.on("answer", (answer) => {
+  peerConnection.setRemoteDescription(answer);
 });
 
 socket.on("leave_room", (user, count) => {
