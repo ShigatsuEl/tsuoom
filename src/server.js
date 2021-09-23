@@ -51,6 +51,10 @@ wsServer.on("connection", (socket) => {
 
   socket.on("nickname", (nickname) => (socket["nickname"] = nickname));
 
+  socket.on("get_room", () => {
+    socket.emit("get_room", publicRooms());
+  });
+
   socket.on("enter_room", (roomName) => {
     socket.join(roomName);
     socket.to(roomName).emit("enter_room");
@@ -79,10 +83,7 @@ wsServer.on("connection", (socket) => {
 
   socket.on("disconnecting", () => {
     socket.rooms.forEach((room) => {
-      socket.to(room).emit("leave_room", socket.nickname);
-      wsServer
-        .to(room)
-        .emit("leave_room", socket.nickname, countRoom(room) - 1);
+      socket.to(room).emit("leave_room", socket.nickname, countRoom(room) - 1);
     });
   });
 

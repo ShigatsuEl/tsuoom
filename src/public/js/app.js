@@ -11,6 +11,7 @@ room.hidden = true;
 
 let roomName;
 let peerConnection;
+let dataChannel;
 
 function addMessage(message) {
   const ul = room.querySelector("ul");
@@ -61,7 +62,30 @@ async function handleRoomSubmit(event) {
 
 welcomeForm.addEventListener("submit", handleRoomSubmit);
 
+socket.emit("get_room");
+
+function handleRooms(rooms) {
+  const roomList = welcome.querySelector("ul");
+  roomList.innerHTML = "";
+  if (rooms.lenght === 0) {
+    return;
+  }
+  console.log(rooms);
+  rooms.forEach((room) => {
+    const li = document.createElement("li");
+    li.innerText = room;
+    roomList.appendChild(li);
+  });
+}
+
+socket.on("get_room", handleRooms);
+
 socket.on("enter_room", async () => {
+  // 데이터 채널
+  dataChannel = peerConnection.createDataChannel("chat");
+  dataChannel.addEventListener("message", (event) => console.log(event.data));
+
+  // PeerToPeer
   const offer = await peerConnection.createOffer();
   peerConnection.setLocalDescription(offer);
   socket.emit("offer", offer, roomName);
@@ -76,6 +100,13 @@ socket.on("enter_room_all", async (user, count) => {
 });
 
 socket.on("offer", async (offer) => {
+  // 데이터 채널
+  peerConnection.addEventListener("datachannel", (event) => {
+    dataChannel = event.channel;
+    dataChannel.addEventListener("message", (event) => console.log(event.data));
+  });
+
+  // PeerToPeer
   console.log("received the offer");
   peerConnection.setRemoteDescription(offer);
   const answer = await peerConnection.createAnswer();
@@ -95,27 +126,16 @@ socket.on("ice", (ice) => {
 });
 
 socket.on("leave_room", (user, count) => {
-  if (count) {
-    showRoomName(roomName, count);
-  } else {
-    addMessage(`${user} left`);
+  addMessage(`${user} left`);
+  showRoomName(roomName, count);
+  if (peerConnection) {
+    peerConnection = undefined;
   }
 });
 
 socket.on("new_message", addMessage);
 
-socket.on("room_change", (rooms) => {
-  const roomList = welcome.querySelector("ul");
-  roomList.innerHTML = "";
-  if (rooms.lenght === 0) {
-    return;
-  }
-  rooms.forEach((room) => {
-    const li = document.createElement("li");
-    li.innerText = room;
-    roomList.appendChild(li);
-  });
-});
+socket.on("room_change", handleRooms);
 
 /**
  * Video Part
