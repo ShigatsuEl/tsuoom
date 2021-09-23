@@ -10,6 +10,7 @@ const welcomeForm = welcome.querySelector("#welcome form");
 room.hidden = true;
 
 let roomName;
+let peerConnection;
 
 function addMessage(message) {
   const ul = room.querySelector("ul");
@@ -33,10 +34,11 @@ function showRoomName(roomName, count) {
   h3.innerText = `Room ${roomName} (${count})`;
 }
 
-function showRoom() {
+async function showRoom() {
   welcome.hidden = true;
   room.hidden = false;
-  getMedia();
+  await getMedia();
+  makeConnection();
   const messageForm = room.querySelector("form");
   messageForm.addEventListener("submit", handleMessageSubmit);
 }
@@ -58,12 +60,21 @@ function handleRoomSubmit(event) {
 
 welcomeForm.addEventListener("submit", handleRoomSubmit);
 
-socket.on("enter_room", (user, count) => {
+socket.on("enter_room", async (user, count) => {
   if (count) {
     showRoomName(roomName, count);
   } else {
     addMessage(`${user} joined`);
   }
+  if (peerConnection) {
+    const offer = await peerConnection.createOffer();
+    peerConnection.setLocalDescription(offer);
+    socket.emit("offer", offer, roomName);
+  }
+});
+
+socket.on("offer", (offer) => {
+  console.log(offer);
 });
 
 socket.on("leave_room", (user, count) => {
@@ -137,7 +148,6 @@ async function getMedia(deviceId) {
     myStream = await navigator.mediaDevices.getUserMedia(
       deviceId ? cameraConstraints : initialConstrains
     );
-    console.log(myStream);
     myCamera.srcObject = myStream;
     if (!deviceId) {
       await getCameras();
@@ -145,6 +155,13 @@ async function getMedia(deviceId) {
   } catch (e) {
     console.log(e);
   }
+}
+
+function makeConnection() {
+  peerConnection = new RTCPeerConnection();
+  myStream
+    .getTracks()
+    .forEach((track) => peerConnection.addTrack(track, myStream));
 }
 
 function handleMuteClick() {
@@ -159,6 +176,7 @@ function handleMuteClick() {
     muted = false;
   }
 }
+
 function handleCameraClick() {
   myStream
     .getVideoTracks()

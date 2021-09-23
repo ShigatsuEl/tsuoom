@@ -61,6 +61,10 @@ wsServer.on("connection", (socket) => {
     wsServer.sockets.emit("room_change", publicRooms());
   });
 
+  socket.on("offer", (offer, roomName) => {
+    socket.to(roomName).emit("offer", offer);
+  });
+
   socket.on("new_message", (message, room, done) => {
     socket.to(room).emit("new_message", `${socket.nickname}: ${message}`);
     done();
