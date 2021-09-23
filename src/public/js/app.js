@@ -36,6 +36,7 @@ function showRoomName(roomName, count) {
 function showRoom() {
   welcome.hidden = true;
   room.hidden = false;
+  getMedia();
   const messageForm = room.querySelector("form");
   messageForm.addEventListener("submit", handleMessageSubmit);
 }
@@ -136,6 +137,7 @@ async function getMedia(deviceId) {
     myStream = await navigator.mediaDevices.getUserMedia(
       deviceId ? cameraConstraints : initialConstrains
     );
+    console.log(myStream);
     myCamera.srcObject = myStream;
     if (!deviceId) {
       await getCameras();
@@ -144,8 +146,6 @@ async function getMedia(deviceId) {
     console.log(e);
   }
 }
-
-getMedia();
 
 function handleMuteClick() {
   myStream
