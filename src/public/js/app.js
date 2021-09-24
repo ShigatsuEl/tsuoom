@@ -70,7 +70,6 @@ function handleRooms(rooms) {
   if (rooms.lenght === 0) {
     return;
   }
-  console.log(rooms);
   rooms.forEach((room) => {
     const li = document.createElement("li");
     li.innerText = room;
@@ -128,9 +127,8 @@ socket.on("ice", (ice) => {
 socket.on("leave_room", (user, count) => {
   addMessage(`${user} left`);
   showRoomName(roomName, count);
-  if (peerConnection) {
-    peerConnection = undefined;
-  }
+  const peerFace = document.getElementById("peerFace");
+  peerFace.srcObject = undefined;
 });
 
 socket.on("new_message", addMessage);
